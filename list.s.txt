@@ -1,0 +1,74 @@
+.align 2		
+.data
+
+str_n:	.asciiz  "n = "
+str_n2:	.asciiz  " , "
+str_n3:	.asciiz  "\n "
+str_n4:	.asciiz  "\n-------\n"
+
+		.globl main
+		.globl insert
+		.globl insert2
+		.globl parse
+		.globl parse2
+		.text
+		
+main:
+	addi $2 , $0 , 9		#allocate memory
+	addi $a0 , $0 , 8
+	syscall			#allocate memory
+	sw $0 , 0($2)		#data=0
+	sw $0 , 4($2)		#nxtPtr=0
+	addi $s0 , $2 , 0 	#initialize $s0($16) with $2
+	addi $s1 , $2 , 0		#initialize $s1($17) with $2
+insert:
+	addi	$2,$0,4		#print
+	la	$4,str_n
+	syscall			#print 
+	
+	addi	$2, $0, 5		#read int
+	syscall			#read int
+	add $12 , $2 , $0		#copy the new int to $12
+	
+	slt $31 , $0 , $12	
+	beq $31 , $0 , insert2
+
+	addi $2 , $0 , 9		#allocate memory
+	addi $a0 , $0 , 8
+	syscall			#allocate memory
+	sw $12 , 0($s1)		#tail = new element
+	sw $2 , 4($s1)		#tail = new element
+	sw $0 , 0($2)		#create new tail
+	sw $0 , 4($2)		#create new tail
+	addi $s1 , $2 ,0
+
+	j insert
+insert2:
+	
+	lw $15 , 0($s0)
+	lw $14 , 4($s0)
+	addi	$2,$0,4		#print
+	la	$4,str_n4
+	syscall			#print 
+	addi	$2,$0,4		#print
+	la	$4,str_n
+	syscall			#print 
+	addi	$2, $0, 5		#read int
+	syscall			#read int
+	add $12 , $2 , $0		#copy the new int to $12
+parse:
+	slt $31 , $12 , $15	#if(array_element<num)then print it
+	bne $31 , $0 , parse2	
+	li	$v0, 1		#print num
+	move	$4, $15
+	syscall			#print num
+	addi	$2,$0,4		#print
+	la	$4,str_n2
+	syscall			#print 
+parse2:	
+	lw $15 , 0($14)		
+	lw $14 , 4($14)		#node=node->next
+	bne $0 , $14 , parse	#end of loop
+	
+
+j insert2
